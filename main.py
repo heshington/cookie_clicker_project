@@ -22,20 +22,6 @@ store_items = {}
 items = driver.find_elements_by_css_selector("#store div")
 item_ids = [item.get_attribute("id") for item in items]
 
-def get_item_cost(item):
-    store_text = item.find_element_by_tag_name("b")
-    split_store_text = store_text.text.split("-")
-    item_text = split_store_text[0]
-    item_cost = split_store_text[1]
-    item_cost = re.sub("[^0-9]", "", item_cost)
-    item_cost = item_cost.rstrip()
-    item_cost = int(item_cost)
-    item_text = item_text.rstrip()
-    store_items[item_text] = item_cost
-
-
-
-print(store_items)
 
 
 
@@ -43,33 +29,24 @@ timeout = time.time() + 5
 five_min =  time.time() + 60 + 5
 while True:
 
-    buyCursor = driver.find_element_by_id("buyCursor")
-    buyGrandma = driver.find_element_by_id("buyGrandma")
-    buyFactory = driver.find_element_by_id("buyFactory")
-    buyMine = driver.find_element_by_id("buyMine")
-    buyShipment = driver.find_element_by_id("buyShipment")
-    buy_alchemy_lab = driver.find_element_by_id("buyAlchemy lab")
-    buyPortal = driver.find_element_by_id("buyPortal")
-    buyTime_machine = driver.find_element_by_id("buyTime machine")
-    listed_upgrades = [buyCursor, buyGrandma, buyFactory, buyMine, buyShipment, buy_alchemy_lab, buyPortal,
-                       buyTime_machine]
-
-    for item in listed_upgrades:
-        get_item_cost(item)
     cookie = driver.find_element_by_id("cookie")
     cookie.click()
+    #every 5 seconds
     if time.time() > timeout:
         # Get all upgrade <b> tags
-        #all_prices = driver.find_elements_by_css_selector("#store b")
-        for item in listed_upgrades:
-            get_item_cost(item)
-        item_prices = list(store_items.values())
-        print(type(item_prices))
+        all_prices = driver.find_elements_by_css_selector("#store b")
+        item_prices = []
+        # Convert <b> text into an integer price.
+        for price in all_prices:
+            element_text = price.text
+            if element_text != "":
+                cost = int(element_text.split("-")[1].strip().replace(",", ""))
+                item_prices.append(cost)
 
         # Create dictionary of store itewhims and prices
         cookie_upgrades = {}
         for n in range(len(item_prices)):
-            cookie_upgrades[item_prices[n]] = listed_upgrades[n]
+            cookie_upgrades[item_prices[n]] = item_ids[n]
 
         #get current cookie count
         money = driver.find_element_by_id("money").text
